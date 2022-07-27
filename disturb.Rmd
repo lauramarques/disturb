@@ -7,12 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(dplyr)
-library(tibble)
+library(tidyverse)
 library(rsofun)
-library(ggplot2)
-library(patchwork)
-library(multidplyr)
 ```
 
 ## Setup
@@ -29,6 +25,37 @@ str(lm3ppa_p_model_drivers)
 
 ## Model runs
 
+Model is first run to steady state. Then for another 100 years undisturbed (continued steady-state) until first disturbance. After first disturbance left undisturbed for 900 years to allow for recovery (in some simulations recovery may take long). Then a regime of repeated disturbance after simulation year 1000 to investigate distrubance-recovery (non-steady state) dynamics, first at low frequency for 1000 years (disturbance every 250 years), then at high frequency for 1000 years (disturbance every 25 years).
+
+Disturbance is implemented by:
+- year 100 first disturbance applied, then recovery until year 1000
+- year 1000 second disturbance, then every 25 years disturbed for 500 years
+
+To be handled by model by (new) forcing time series as input (`harv`)
+```{r}
+harv_vec <- rep(0, 999)
+harv_vec[100] <- 1
+harv_vec <- c(harv_vec, rep(c(1, rep(0, 249)), 4), rep(c(1, rep(0, 24)), 40))
+
+tibble(year = seq(length(harv_vec)), harv = harv_vec) %>% 
+  ggplot(aes(year, harv)) +
+  geom_line()
+```
+
+
+- sc0: C-only, no disturbance
+- sc1: C-only, disturbance by killing vegetation, no biomass removal
+- sc2: C-only, disturbance by killing vegetation, aboveground biomass is removed
+- sc3: C-only, disturbance by killing vegetation, aboveground biomass is removed, re-growth is grass
+- cn0: C-N, no disturbance
+- cn1: C-N, disturbance by killing vegetation, no biomass removal
+- cn2: C-N, disturbance by killing vegetation, aboveground biomass is removed
+- cn3: C-N, disturbance by killing vegetation, aboveground biomass is removed, re-growth is grass
+- cn4: C-N, disturbance by killing vegetation, aboveground biomass is removed, 50% of SOM is removed
+- cn5: C-N, disturbance by killing vegetation, aboveground biomass is removed, N deposition is reduced to 10%
+- cn6: C-N, disturbance by killing vegetation, aboveground biomass is removed, N deposition is increased by factor 10.
+
+
 ### Control run
 
 ```{r}
@@ -43,7 +70,6 @@ out <- runread_lm3ppa_f(
 Annual, tile-level outputs are in
 ```{r}
 outa <- out$data[[1]]$output_annual_tile
-outa
 ```
 
 
