@@ -47,6 +47,9 @@ tibble(year = seq(length(harv_vec)), harv = harv_vec) %>%
 - sc1: C-only, disturbance by killing vegetation, no biomass removal
 - sc2: C-only, disturbance by killing vegetation, aboveground biomass is removed
 - sc3: C-only, disturbance by killing vegetation, aboveground biomass is removed, re-growth is grass
+- sc4: C-only, disturbance by killing vegetation, aboveground biomass is removed, re-growth is grass, soil temperature increased by 5 deg C
+
+
 - cn0: C-N, no disturbance
 - cn1: C-N, disturbance by killing vegetation, no biomass removal
 - cn2: C-N, disturbance by killing vegetation, aboveground biomass is removed
@@ -54,6 +57,7 @@ tibble(year = seq(length(harv_vec)), harv = harv_vec) %>%
 - cn4: C-N, disturbance by killing vegetation, aboveground biomass is removed, 50% of SOM is removed
 - cn5: C-N, disturbance by killing vegetation, aboveground biomass is removed, N deposition is reduced to 10%
 - cn6: C-N, disturbance by killing vegetation, aboveground biomass is removed, N deposition is increased by factor 10.
+- cn7: C-N, disturbance by killing vegetation, aboveground biomass is removed, re-growth is grass, soil temperature increased by 5 deg C
 
 
 ### Control run
