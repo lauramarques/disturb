@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(rsofun)
+library(rsofun) # can be obtained as described here: https://computationales.github.io/rsofun/
 ```
 
 ## Setup
@@ -57,6 +57,8 @@ tibble(year = seq(length(harv_vec)), harv = harv_vec) %>%
 
 
 ### Control run
+
+No disturbance or anything done here. Just to show that the model runs and produces something.
 
 ```{r}
 # run the model
