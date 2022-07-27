@@ -1,0 +1,58 @@
+---
+title: "Disturbance simulations"
+author: "Beni Stocker"
+date: "2022-07-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tibble)
+library(rsofun)
+library(ggplot2)
+library(patchwork)
+library(multidplyr)
+```
+
+## Setup
+
+All parameters, site info, and forcing data is available for an example in the driver object (part of rsofun package)
+```{r}
+lm3ppa_p_model_drivers
+```
+
+This contains the following:
+```{r}
+str(lm3ppa_p_model_drivers)
+```
+
+## Model runs
+
+### Control run
+
+```{r}
+# run the model
+out <- runread_lm3ppa_f(
+     lm3ppa_p_model_drivers,
+     makecheck = TRUE,
+     parallel = FALSE
+     )
+```
+
+Annual, tile-level outputs are in
+```{r}
+outa <- out$data[[1]]$output_annual_tile
+outa
+```
+
+
+## Analysis
+
+```{r}
+outa %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = plantC)) +
+  theme_classic()+labs(x = "Year", y = "plantC")
+```
+
