@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(patchwork)
 
 ## install the rsofun branch 'disturb'
 #remotes::install_github(repo = "computationales/rsofun", ref = "disturb")
@@ -118,50 +119,101 @@ lm3ppa_p_model_drivers_xx1 <- lm3ppa_p_model_drivers
 lm3ppa_p_model_drivers_xx1$forcing[[1]] <- df_forcing_disturb
 lm3ppa_p_model_drivers_xx1$params_siml[[1]]$firstyeartrend <- 0
 lm3ppa_p_model_drivers_xx1$params_siml[[1]]$nyeartrend <- 3000
-
-## xxx debug
-lm3ppa_p_model_drivers_xx1$forcing[[1]]$harv[1] <- 0
-
-## check
-lm3ppa_p_model_drivers_xx1$forcing[[1]] %>% 
-  mutate(date = lubridate::ymd("0000-01-01") + lubridate::years(year-1) + lubridate::days(doy-1)) %>% 
-  ggplot(aes(date, harv)) +
-  geom_line()
 ```
 
 
-## Model run
+## Model runs
 
-No disturbance or anything done here. Just to show that the model runs and produces something.
+### sc1
 
 ```{r}
-out <- runread_lm3ppa_f(
-     lm3ppa_p_model_drivers_xx1,
-     makecheck = TRUE,
-     parallel = FALSE
-     )
+filn <- "data/out_sc1.rds"
+if (!file.exists(filn)){
+  out_sc1 <- runread_lm3ppa_f(
+       lm3ppa_p_model_drivers_xx1,
+       makecheck = TRUE,
+       parallel = FALSE
+       )
+  saveRDS(out_sc1, file = filn)
+} else 
+  out_sc1 <- readRDS(filn)
 ```
 
+### sc2
+
+Export of dead biomass from system (not added to soil) is implemented by simply not calling the `plant2soil()` in the subroutine `disturb()` (file `vegetation_lm3ppa.mod.f90`). Comment it out and re-compile before running.
+```{r}
+filn <- "data/out_sc2.rds"
+if (!file.exists(filn)){
+  out_sc2 <- runread_lm3ppa_f(
+       lm3ppa_p_model_drivers_xx1,
+       makecheck = TRUE,
+       parallel = FALSE
+       )
+  saveRDS(out_sc2, filn)
+} else 
+  out_sc2 <- readRDS(filn)
+```
 
 ## Analysis
 
-Annual, tile-level outputs are in
+Take annual tile-level outputs (for shorthand).
 ```{r}
-outa <- out$data[[1]]$output_annual_tile
+out_sc1_ann <- out_sc1$data[[1]]$output_annual_tile
+out_sc2_ann <- out_sc2$data[[1]]$output_annual_tile
 ```
 
 
+### Plant C
+
 ```{r}
-outa %>%
+# model output includes the spinup. Remove it for plotting and overwrite years.
+out_sc1_ann <- out_sc1_ann %>%
+  slice((lm3ppa_p_model_drivers_xx1$params_siml[[1]]$spinupyears + 1):nrow(out_sc1_ann)) %>% 
+  mutate(year = 1:nyears)
+out_sc2_ann <- out_sc2_ann %>%
+  slice((lm3ppa_p_model_drivers_xx1$params_siml[[1]]$spinupyears + 1):nrow(out_sc2_ann)) %>% 
+  mutate(year = 1:nyears)
   
-  # model output includes the spinup. Remove it for plotting and overwrite years.
-  slice((lm3ppa_p_model_drivers_xx1$params_siml[[1]]$spinupyears + 1):nrow(outa)) %>% 
-  mutate(year = 1:nyears) %>%
-  
+gg_sc1 <- out_sc1_ann %>% 
   ggplot() +
   geom_line(aes(x = year, y = plantC)) +
   theme_classic() +
   geom_vline(xintercept = df_harv %>% filter(harv > 0) %>% pull(year), color = "red", alpha = 0.3) +
-  labs(x = "Year", y = "plant C", title = "Simulation sc1")
+  labs(x = "Year", y = "plant C", title = "Simulation sc1") +
+  ylim(0, 15)
+
+gg_sc2 <- out_sc2_ann %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = plantC)) +
+  theme_classic() +
+  geom_vline(xintercept = df_harv %>% filter(harv > 0) %>% pull(year), color = "red", alpha = 0.3) +
+  labs(x = "Year", y = "plant C", title = "Simulation sc2") +
+  ylim(0, 15)
+
+gg_sc1 /
+  gg_sc2
 ```
 
+### Soil C
+
+```{r}
+gg_sc1 <- out_sc1_ann %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = fastSOM + SlowSOM)) +
+  theme_classic() +
+  geom_vline(xintercept = df_harv %>% filter(harv > 0) %>% pull(year), color = "red", alpha = 0.3) +
+  labs(x = "Year", y = "Soil C", title = "Simulation sc1") +
+  ylim(0, 100)
+
+gg_sc2 <- out_sc2_ann %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = fastSOM + SlowSOM)) +
+  theme_classic() +
+  geom_vline(xintercept = df_harv %>% filter(harv > 0) %>% pull(year), color = "red", alpha = 0.3) +
+  labs(x = "Year", y = "Soil C", title = "Simulation sc2") +
+  ylim(0, 100)
+
+gg_sc1 /
+  gg_sc2
+```

@@ -1,9 +1,10 @@
-﻿Simulation name,C-N coupling,Disturbance,Aboveground biomass removed,SOM removed,Grass regrowing,Soil temperature change,N deposition level
+Simulation name,C-N coupling,Disturbance,ABG removed from system,SOM removed,Grass regrowing,Soil temperature change,N deposition level
 sc0,No,No,0%,0%,No,none,control
-sc1,No,Yes,90%,0%,No,none,control
+sc1,No,Yes,0%,0%,No,none,control
+sc2,No,Yes,90%,0%,No,none,control
 sc3,No,Yes,90%,0%,Yes,none,control
 sc4,No,Yes,90%,0%,No,5 deg C,control
-cn0,Yes,No,90%,0%,No,none,control
+cn0,Yes,No,0%,0%,No,none,control
 cn1,Yes,Yes,0%,0%,No,none,control
 cn2,Yes,Yes,90%,0%,No,none,control
 cn3,Yes,Yes,90%,0%,Yes,none,control
