@@ -19,7 +19,7 @@ library(rsofun)
 
 All parameters, site info, and forcing data is available for an example in the driver object (part of rsofun package)
 ```{r}
-  lm3ppa_p_model_drivers$forcing[[1]]
+biomee_p_model_drivers$forcing[[1]]
 ```
 
 This contains the forcing time series data frame where the disturbance is to be defined as the fraction of aboveground biomass harvested (`harv`). Additional specifications of the disturbance forcing, which are more specific to the simulations done here, are hard-coded (see below). 
@@ -62,7 +62,7 @@ df_sims %>% knitr::kable()
 
 ```{r}
 ## get mean seasonal cycle and repeat this every year of all simulations
-df_forcing <- lm3ppa_p_model_drivers$forcing[[1]] %>% 
+df_forcing <- biomee_p_model_drivers$forcing[[1]] %>% 
   mutate(doy = lubridate::yday(date)) %>% 
   group_by(doy) %>% 
   summarise(across(is.numeric, mean))
@@ -109,16 +109,16 @@ df_forcing_disturb <- df_forcing_disturb %>%
 Create new driver objects.
 ```{r}
 ## control simulations without disturbance
-lm3ppa_p_model_drivers_xx0 <- lm3ppa_p_model_drivers
-lm3ppa_p_model_drivers_xx0$forcing[[1]] <- df_forcing
-lm3ppa_p_model_drivers_xx0$params_siml[[1]]$firstyeartrend <- 0
-lm3ppa_p_model_drivers_xx0$params_siml[[1]]$nyeartrend <- 3000
+biomee_p_model_drivers_xx0 <- biomee_p_model_drivers
+biomee_p_model_drivers_xx0$forcing[[1]] <- df_forcing
+biomee_p_model_drivers_xx0$params_siml[[1]]$firstyeartrend <- 0
+biomee_p_model_drivers_xx0$params_siml[[1]]$nyeartrend <- 3000
 
 ## simulations with disturbance
-lm3ppa_p_model_drivers_xx1 <- lm3ppa_p_model_drivers
-lm3ppa_p_model_drivers_xx1$forcing[[1]] <- df_forcing_disturb
-lm3ppa_p_model_drivers_xx1$params_siml[[1]]$firstyeartrend <- 0
-lm3ppa_p_model_drivers_xx1$params_siml[[1]]$nyeartrend <- 3000
+biomee_p_model_drivers_xx1 <- biomee_p_model_drivers
+biomee_p_model_drivers_xx1$forcing[[1]] <- df_forcing_disturb
+biomee_p_model_drivers_xx1$params_siml[[1]]$firstyeartrend <- 0
+biomee_p_model_drivers_xx1$params_siml[[1]]$nyeartrend <- 3000
 ```
 
 
@@ -129,8 +129,8 @@ lm3ppa_p_model_drivers_xx1$params_siml[[1]]$nyeartrend <- 3000
 ```{r}
 filn <- "data/out_sc1.rds"
 if (!file.exists(filn)){
-  out_sc1 <- runread_lm3ppa_f(
-       lm3ppa_p_model_drivers_xx1,
+  out_sc1 <- runread_biomee_f(
+       biomee_p_model_drivers_xx1,
        makecheck = TRUE,
        parallel = FALSE
        )
@@ -141,12 +141,12 @@ if (!file.exists(filn)){
 
 ### sc2
 
-Export of dead biomass from system (not added to soil) is implemented by simply not calling the `plant2soil()` in the subroutine `disturb()` (file `vegetation_lm3ppa.mod.f90`). Comment it out and re-compile before running.
+Export of dead biomass from system (not added to soil) is implemented by simply not calling the `plant2soil()` in the subroutine `disturb()` (file `vegetation_biomee.mod.f90`). Comment it out and re-compile before running.
 ```{r}
 filn <- "data/out_sc2.rds"
 if (!file.exists(filn)){
-  out_sc2 <- runread_lm3ppa_f(
-       lm3ppa_p_model_drivers_xx1,
+  out_sc2 <- runread_biomee_f(
+       biomee_p_model_drivers_xx1,
        makecheck = TRUE,
        parallel = FALSE
        )
@@ -169,10 +169,10 @@ out_sc2_ann <- out_sc2$data[[1]]$output_annual_tile
 ```{r}
 # model output includes the spinup. Remove it for plotting and overwrite years.
 out_sc1_ann <- out_sc1_ann %>%
-  slice((lm3ppa_p_model_drivers_xx1$params_siml[[1]]$spinupyears + 1):nrow(out_sc1_ann)) %>% 
+  slice((biomee_p_model_drivers_xx1$params_siml[[1]]$spinupyears + 1):nrow(out_sc1_ann)) %>% 
   mutate(year = 1:nyears)
 out_sc2_ann <- out_sc2_ann %>%
-  slice((lm3ppa_p_model_drivers_xx1$params_siml[[1]]$spinupyears + 1):nrow(out_sc2_ann)) %>% 
+  slice((biomee_p_model_drivers_xx1$params_siml[[1]]$spinupyears + 1):nrow(out_sc2_ann)) %>% 
   mutate(year = 1:nyears)
   
 gg_sc1 <- out_sc1_ann %>% 
